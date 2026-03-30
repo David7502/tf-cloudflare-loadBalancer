@@ -26,7 +26,21 @@ resource "google_compute_firewall" "allow_ssh" {
   target_tags   = ["ssh-enabled"]
 }
 
-# Pas d'autres ports ouverts - tout le trafic web passe par cloudflared
+# Autoriser le trafic interne entre VMs (tunnel -> web)
+resource "google_compute_firewall" "allow_internal" {
+  name    = "allow-internal"
+  network = google_compute_network.vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  source_ranges = ["10.0.0.0/24", "10.1.0.0/24"]
+  target_tags   = ["ssh-enabled"]
+}
+
+# Pas d'autres ports ouverts - tout le trafic web externe passe par cloudflared
 
 # ============================================
 # 🇪🇺 Region europe-west1
