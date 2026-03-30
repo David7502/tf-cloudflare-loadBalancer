@@ -76,52 +76,54 @@ cp terraform.tfvars.example terraform.tfvars
 # Éditer terraform.tfvars avec votre project_id et ssh_public_key
 ```
 
-### 3. Déployer l'infrastructure
-
-```bash
-terraform init
-terraform apply
-```
-
-### 4. Configurer Ansible
-
-Après `terraform apply`, récupérer les IPs :
-
-```bash
-terraform output
-```
-
-Mettre à jour `ansible/inventory.ini` avec les IPs.
-
-Créer les fichiers de credentials pour les tunnels :
+### 3. Configurer les credentials Cloudflare
 
 ```bash
 cp ansible/host_vars/vm-tunnel-europe.yml.example ansible/host_vars/vm-tunnel-europe.yml
 cp ansible/host_vars/vm-tunnel-us.yml.example ansible/host_vars/vm-tunnel-us.yml
-# Éditer avec vos credentials Cloudflare
+# Éditer avec vos credentials Cloudflare (décodés du token)
 ```
 
-### 5. Provisionner les VMs
+### 4. Déployer (automatique)
 
 ```bash
+terraform init
+./deploy.sh
+```
+
+Le script `deploy.sh` exécute automatiquement :
+1. `terraform apply` - crée les VMs
+2. Génère l'inventory Ansible avec les IPs
+3. Lance les playbooks Ansible (nginx + cloudflared)
+
+### Déploiement manuel (optionnel)
+
+Si vous préférez exécuter les étapes manuellement :
+
+```bash
+# Terraform
+terraform apply
+
+# Générer l'inventory
+./generate_inventory.sh
+
+# Ansible
 cd ansible
-
-# Installer nginx sur les VMs web
 ansible-playbook -i inventory.ini playbook.yml
-
-# Installer cloudflared sur les VMs tunnel
 ansible-playbook -i inventory.ini playbook_tunnel.yml
 ```
 
 ## 📁 Structure
 
 ```
-├── main.tf                 # 4 VMs + VPC (pas de firewall)
+├── main.tf                 # 4 VMs + VPC + Firewall
 ├── variables.tf            # Variables globales
 ├── outputs.tf              # IPs des VMs
 ├── provider.tf             # Provider GCP
+├── deploy.sh               # Script de déploiement automatique
+├── generate_inventory.sh   # Génère l'inventory depuis Terraform
 └── ansible/
-    ├── inventory.ini       # Inventaire des VMs
+    ├── inventory.ini       # Inventaire des VMs (généré automatiquement)
     ├── playbook.yml        # Playbook nginx (VMs web)
     ├── playbook_tunnel.yml # Playbook cloudflared (VMs tunnel)
     └── host_vars/          # Credentials par tunnel
