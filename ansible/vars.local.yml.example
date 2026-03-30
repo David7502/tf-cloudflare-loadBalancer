@@ -1,0 +1,18 @@
+# Variables pour Cloudflared - Définies par host dans host_vars/
+# Copier ce fichier en vars.local.yml et créer les fichiers host_vars
+
+# Structure attendue dans host_vars/vm-tunnel-europe.yml :
+# tunnel_id: "votre-tunnel-id-europe"
+# tunnel_hostname: "eu.example.com"
+# tunnel_credentials:
+#   AccountTag: "votre-account-tag"
+#   TunnelID: "votre-tunnel-id-europe"
+#   TunnelSecret: "votre-tunnel-secret-europe"
+
+# Structure attendue dans host_vars/vm-tunnel-us.yml :
+# tunnel_id: "votre-tunnel-id-us"
+# tunnel_hostname: "us.example.com"
+# tunnel_credentials:
+#   AccountTag: "votre-account-tag"
+#   TunnelID: "votre-tunnel-id-us"
+#   TunnelSecret: "votre-tunnel-secret-us"

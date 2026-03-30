@@ -1,0 +1,30 @@
+{
+  "users": [
+    { "id": 1, "name": "Alice Martin", "email": "alice.martin@example.com", "role": "admin" },
+    { "id": 2, "name": "Bob Dupont", "email": "bob.dupont@example.com", "role": "user" },
+    { "id": 3, "name": "Claire Bernard", "email": "claire.bernard@example.com", "role": "user" },
+    { "id": 4, "name": "David Leroy", "email": "david.leroy@example.com", "role": "moderator" },
+    { "id": 5, "name": "Emma Petit", "email": "emma.petit@example.com", "role": "user" }
+  ],
+  "products": [
+    { "id": 1, "name": "Laptop Pro 15", "price": 1299.99, "stock": 45, "category": "electronics" },
+    { "id": 2, "name": "Wireless Mouse", "price": 29.99, "stock": 150, "category": "electronics" },
+    { "id": 3, "name": "USB-C Hub", "price": 49.99, "stock": 80, "category": "accessories" },
+    { "id": 4, "name": "Mechanical Keyboard", "price": 89.99, "stock": 60, "category": "electronics" },
+    { "id": 5, "name": "Monitor 27inch", "price": 349.99, "stock": 25, "category": "electronics" }
+  ],
+  "orders": [
+    { "id": 1, "userId": 2, "productId": 1, "quantity": 1, "status": "delivered", "date": "2026-03-10" },
+    { "id": 2, "userId": 3, "productId": 2, "quantity": 2, "status": "pending", "date": "2026-03-15" },
+    { "id": 3, "userId": 1, "productId": 4, "quantity": 1, "status": "shipped", "date": "2026-03-12" },
+    { "id": 4, "userId": 5, "productId": 3, "quantity": 3, "status": "processing", "date": "2026-03-16" },
+    { "id": 5, "userId": 4, "productId": 5, "quantity": 1, "status": "delivered", "date": "2026-03-08" }
+  ],
+  "comments": [
+    { "id": 1, "productId": 1, "userId": 2, "text": "Excellent laptop, very fast!", "rating": 5 },
+    { "id": 2, "productId": 2, "userId": 3, "text": "Good value for money", "rating": 4 },
+    { "id": 3, "productId": 4, "userId": 1, "text": "Best keyboard I ever had", "rating": 5 },
+    { "id": 4, "productId": 3, "userId": 5, "text": "Works perfectly with my MacBook", "rating": 4 },
+    { "id": 5, "productId": 5, "userId": 4, "text": "Great display quality", "rating": 5 }
+  ]
+}

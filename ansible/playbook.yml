@@ -1,0 +1,55 @@
+# ============================================
+# 🌐 Playbook Web - Nginx avec header région
+# ============================================
+
+- hosts: web
+  become: yes
+
+  tasks:
+    - name: Mettre à jour apt
+      apt:
+        update_cache: yes
+
+    - name: Installer nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Créer la configuration nginx avec header région
+      copy:
+        dest: /etc/nginx/sites-available/default
+        content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+
+              root /var/www/html;
+              index index.html;
+
+              server_name _;
+
+              location / {
+                  add_header X-Region "{{ region }}" always;
+                  try_files $uri $uri/ =404;
+              }
+          }
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Page personnalisée Hello From Cloudflare
+      copy:
+        content: "<h1>Hello From Cloudflare</h1>"
+        dest: /var/www/html/index.html
+        mode: "0644"
+
+    - name: Démarrer nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded

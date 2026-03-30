@@ -1,0 +1,56 @@
+# Terraform Local Files
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.*
+terraform.tfstate.backup
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+tfplan
+tfstate
+
+# Variables - Keep only .example files
+terraform.tfvars
+!terraform.tfvars.example
+
+# Ansible sensitive variables
+ansible/vars.local.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Google Cloud credentials
+google-credentials.json
+gcp-key.json
+service-account-key.json
+*-key.json
+*-credentials.json
+credentials.json
+
+# OS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+
+# Local Development
+.env
+.env.local
+*.pem
+*.pub
+
+# Logs
+*.log
+logs/

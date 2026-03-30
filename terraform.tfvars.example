@@ -1,0 +1,7 @@
+project_id="PROJECT_ID_GCP"
+#region="europe-west-1"
+#zone="europe-west-1-b"
+#instance_name="my-vm"
+#machine_type="f1-micro"
+ssh_username = "david"
+ssh_public_key = "PUBLIC_KEY"

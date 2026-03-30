@@ -1,0 +1,9 @@
+# Variables Cloudflared pour le tunnel US
+# Copier ce fichier en vm-tunnel-us.yml et remplir les valeurs
+
+tunnel_id: "votre-tunnel-id-us"
+tunnel_hostname: "us.example.com"
+tunnel_credentials:
+  AccountTag: "votre-account-tag"
+  TunnelID: "votre-tunnel-id-us"
+  TunnelSecret: "votre-tunnel-secret-us"
