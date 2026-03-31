@@ -63,29 +63,29 @@ resource "cloudflare_load_balancer_pool" "pool_eu" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-pool-europe"
 
-  origins = [{
+  origins {
     name    = "${var.prefix}-tunnel-europe"
     address = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel_eu.id}.cfargotunnel.com"
     enabled = true
-  }]
+  }
 }
 
 resource "cloudflare_load_balancer_pool" "pool_us" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-pool-us"
 
-  origins = [{
+  origins {
     name    = "${var.prefix}-tunnel-us"
     address = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel_us.id}.cfargotunnel.com"
     enabled = true
-  }]
+  }
 }
 
 resource "cloudflare_load_balancer" "lb" {
-  zone_id        = var.cloudflare_zone_id
-  name           = var.cloudflare_domain
-  fallback_pool  = cloudflare_load_balancer_pool.pool_eu.id
-  default_pools  = [
+  zone_id          = var.cloudflare_zone_id
+  name             = var.cloudflare_domain
+  fallback_pool_id = cloudflare_load_balancer_pool.pool_eu.id
+  default_pool_ids = [
     cloudflare_load_balancer_pool.pool_eu.id,
     cloudflare_load_balancer_pool.pool_us.id
   ]
