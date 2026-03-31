@@ -69,6 +69,10 @@ resource "cloudflare_load_balancer_monitor" "http_monitor" {
   retries        = 2
   timeout        = 5
   description    = "${var.prefix}-http-monitor"
+  header {
+    header = "Host"
+    values = [var.cloudflare_domain]
+  }
 }
 
 resource "cloudflare_load_balancer_pool" "pool_eu" {
