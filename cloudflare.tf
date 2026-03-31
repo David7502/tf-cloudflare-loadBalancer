@@ -1,35 +1,25 @@
 # cloudflare.tf — Tunnels, Load Balancer et DNS
 
 # ============================================
-# 🚇 Tunnels Cloudflare
+# 🚇 Tunnels Cloudflare (remotely-managed)
 # ============================================
 
-resource "cloudflare_tunnel" "tunnel_eu" {
+resource "cloudflare_zero_trust_tunnel_cloudflared" "tunnel_eu" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-tunnel-europe"
-  secret     = random_password.tunnel_secret_eu.result
+  config_src = "cloudflare"
 }
 
-resource "cloudflare_tunnel" "tunnel_us" {
+resource "cloudflare_zero_trust_tunnel_cloudflared" "tunnel_us" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-tunnel-us"
-  secret     = random_password.tunnel_secret_us.result
-}
-
-resource "random_password" "tunnel_secret_eu" {
-  length  = 32
-  special = false
-}
-
-resource "random_password" "tunnel_secret_us" {
-  length  = 32
-  special = false
+  config_src = "cloudflare"
 }
 
 # Configuration des tunnels (ingress rules)
-resource "cloudflare_tunnel_config" "tunnel_eu_config" {
+resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_eu_config" {
   account_id = var.cloudflare_account_id
-  tunnel_id  = cloudflare_tunnel.tunnel_eu.id
+  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.tunnel_eu.id
 
   config {
     ingress_rule {
@@ -42,9 +32,9 @@ resource "cloudflare_tunnel_config" "tunnel_eu_config" {
   }
 }
 
-resource "cloudflare_tunnel_config" "tunnel_us_config" {
+resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_us_config" {
   account_id = var.cloudflare_account_id
-  tunnel_id  = cloudflare_tunnel.tunnel_us.id
+  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.tunnel_us.id
 
   config {
     ingress_rule {
@@ -65,35 +55,37 @@ resource "cloudflare_load_balancer_pool" "pool_eu" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-pool-europe"
 
-  origins = [{
+  origins {
     name    = "${var.prefix}-tunnel-europe"
-    address = "${cloudflare_tunnel.tunnel_eu.id}.cfargotunnel.com"
+    address = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel_eu.id}.cfargotunnel.com"
     enabled = true
-    header = {
-      Host = [var.cloudflare_domain]
+    header {
+      header = "Host"
+      values = [var.cloudflare_domain]
     }
-  }]
+  }
 }
 
 resource "cloudflare_load_balancer_pool" "pool_us" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-pool-us"
 
-  origins = [{
+  origins {
     name    = "${var.prefix}-tunnel-us"
-    address = "${cloudflare_tunnel.tunnel_us.id}.cfargotunnel.com"
+    address = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel_us.id}.cfargotunnel.com"
     enabled = true
-    header = {
-      Host = [var.cloudflare_domain]
+    header {
+      header = "Host"
+      values = [var.cloudflare_domain]
     }
-  }]
+  }
 }
 
 resource "cloudflare_load_balancer" "lb" {
-  zone_id        = var.cloudflare_zone_id
-  name           = var.cloudflare_domain
-  fallback_pool  = cloudflare_load_balancer_pool.pool_eu.id
-  default_pools  = [
+  zone_id          = var.cloudflare_zone_id
+  name             = var.cloudflare_domain
+  fallback_pool_id = cloudflare_load_balancer_pool.pool_eu.id
+  default_pool_ids = [
     cloudflare_load_balancer_pool.pool_eu.id,
     cloudflare_load_balancer_pool.pool_us.id
   ]
@@ -107,24 +99,24 @@ resource "cloudflare_load_balancer" "lb" {
 
 output "tunnel_eu_token" {
   description = "Token du tunnel Europe pour cloudflared"
-  value       = cloudflare_tunnel.tunnel_eu.tunnel_token
+  value       = cloudflare_zero_trust_tunnel_cloudflared.tunnel_eu.tunnel_token
   sensitive   = true
 }
 
 output "tunnel_us_token" {
   description = "Token du tunnel US pour cloudflared"
-  value       = cloudflare_tunnel.tunnel_us.tunnel_token
+  value       = cloudflare_zero_trust_tunnel_cloudflared.tunnel_us.tunnel_token
   sensitive   = true
 }
 
 output "tunnel_eu_id" {
   description = "ID du tunnel Europe"
-  value       = cloudflare_tunnel.tunnel_eu.id
+  value       = cloudflare_zero_trust_tunnel_cloudflared.tunnel_eu.id
 }
 
 output "tunnel_us_id" {
   description = "ID du tunnel US"
-  value       = cloudflare_tunnel.tunnel_us.id
+  value       = cloudflare_zero_trust_tunnel_cloudflared.tunnel_us.id
 }
 
 output "load_balancer_hostname" {
