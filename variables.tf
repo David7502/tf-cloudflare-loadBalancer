@@ -7,6 +7,12 @@ variable "project_id" {
   type        = string
 }
 
+variable "prefix" {
+  description = "Préfixe pour les noms de ressources (évite les conflits)"
+  type        = string
+  default     = "lb"
+}
+
 variable "machine_type" {
   description = "Type de machine (ex : e2-medium)"
   type        = string
@@ -33,5 +39,30 @@ variable "ssh_username" {
 
 variable "ssh_public_key" {
   description = "Clé publique SSH pour l'accès à la VM"
+  type        = string
+}
+
+# ============================================
+# ☁️ Cloudflare
+# ============================================
+
+variable "cloudflare_api_token" {
+  description = "API Token Cloudflare (avec permissions Zone, DNS, Load Balancer, Tunnel)"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_account_id" {
+  description = "Account ID Cloudflare"
+  type        = string
+}
+
+variable "cloudflare_zone_id" {
+  description = "Zone ID du domaine Cloudflare"
+  type        = string
+}
+
+variable "cloudflare_domain" {
+  description = "Domaine pour le load balancer (ex: lb-demo.dgcf.ovh)"
   type        = string
 }

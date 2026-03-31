@@ -1,9 +1,0 @@
-# Variables Cloudflared pour le tunnel Europe
-# Copier ce fichier en vm-tunnel-europe.yml et remplir les valeurs
-
-tunnel_id: "votre-tunnel-id-europe"
-tunnel_hostname: "eu.example.com"
-tunnel_credentials:
-  AccountTag: "votre-account-tag"
-  TunnelID: "votre-tunnel-id-europe"
-  TunnelSecret: "votre-tunnel-secret-europe"

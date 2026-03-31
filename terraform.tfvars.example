@@ -1,7 +1,20 @@
-project_id="PROJECT_ID_GCP"
-#region="europe-west-1"
-#zone="europe-west-1-b"
-#instance_name="my-vm"
-#machine_type="f1-micro"
-ssh_username = "david"
-ssh_public_key = "PUBLIC_KEY"
+# ============================================
+# 🌐 GCP Configuration
+# ============================================
+project_id     = "PROJECT_ID_GCP"
+ssh_username   = "david"
+ssh_public_key = "ssh-ed25519 AAAA..."
+
+# ============================================
+# ☁️ Cloudflare Configuration
+# ============================================
+cloudflare_api_token  = "YOUR_CLOUDFLARE_API_TOKEN"
+cloudflare_account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+cloudflare_zone_id    = "YOUR_CLOUDFLARE_ZONE_ID"
+cloudflare_domain     = "lb-demo.example.com"
+
+# ============================================
+# 🔧 Optionnel
+# ============================================
+# prefix       = "lb"
+# machine_type = "e2-medium"

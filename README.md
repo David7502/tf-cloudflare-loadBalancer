@@ -1,13 +1,14 @@
 # Cloudflare Tunnel Infrastructure
 
-Déploiement de 4 VMs GCP avec Cloudflare Tunnels pour exposer des sites web sans ouvrir de ports.
+Déploiement **100% automatisé** de 4 VMs GCP avec Cloudflare Tunnels, Load Balancer et DNS.
 
 ## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Cloudflare                                │
-│                     (Load Balancer)                              │
+│              (Load Balancer + DNS + Tunnels)                     │
+│                    ↑ créés par Terraform                         │
 └─────────────────┬───────────────────────────┬───────────────────┘
                   │                           │
          ┌────────▼────────┐         ┌────────▼────────┐
@@ -22,115 +23,104 @@ Déploiement de 4 VMs GCP avec Cloudflare Tunnels pour exposer des sites web san
          └─────────────────┘         └─────────────────┘
 ```
 
-**4 VMs déployées :**
-- **vm-web-europe** : nginx avec header `X-Region: europe-west1`
-- **vm-tunnel-europe** : cloudflared connecté à vm-web-europe
-- **vm-web-us** : nginx avec header `X-Region: us-central1`
-- **vm-tunnel-us** : cloudflared connecté à vm-web-us
+**Ressources créées automatiquement :**
 
-**Sécurité** : Aucun port ouvert dans le firewall GCP. Tout le trafic passe par les tunnels Cloudflare.
+**GCP :**
+- 4 VMs (2 web + 2 tunnel) dans 2 régions
+- VPC + Subnets + Firewall (SSH + interne uniquement)
+
+**Cloudflare :**
+- 2 Tunnels (Europe + US)
+- Load Balancer avec geo-steering
+- Records DNS
 
 ## 📋 Prérequis
 
 - [Terraform](https://www.terraform.io/downloads.html) >= 1.0
-- Compte Google Cloud Platform (GCP)
-- Compte Cloudflare avec 2 tunnels créés
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+- Compte Google Cloud Platform (GCP)
+- Compte Cloudflare avec :
+  - Un domaine configuré
+  - Un API Token avec permissions : `Zone:Read`, `Zone:Edit`, `DNS:Edit`, `Load Balancer:Edit`, `Cloudflare Tunnel:Edit`
 
 ## 🔧 Installation
 
-### 0. Cloner le repository
+### 1. Cloner le repository
 
 ```bash
 git clone https://github.com/David7502/tf-cloudflare-loadBalancer.git
 cd tf-cloudflare-loadBalancer
 ```
 
-### 1. Créer les tunnels Cloudflare
-
-Dans le dashboard **Cloudflare Zero Trust** :
-
-1. **Access** → **Tunnels** → **Create a tunnel**
-2. Choisir **Cloudflared**
-3. Donner un nom (ex: `tunnel-europe` et `tunnel-us`)
-4. Sélectionner **Debian** → **64-bit** (correspond à l'image des VMs)
-5. Récupérer le token affiché
-
-**Décoder le token** pour obtenir les credentials :
-
-```bash
-echo "VOTRE_TOKEN_ICI" | base64 -d
-```
-
-Résultat :
-```json
-{"a":"AccountTag","t":"TunnelID","s":"TunnelSecret"}
-```
-
-> **Note** : Ne pas exécuter la commande d'installation affichée par Cloudflare — Ansible s'en charge.
-
 ### 2. Configurer Terraform
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
-# Éditer terraform.tfvars avec votre project_id et ssh_public_key
 ```
 
-### 3. Configurer les credentials Cloudflare
+Éditer `terraform.tfvars` :
 
-```bash
-cp ansible/host_vars/vm-tunnel-europe.yml.example ansible/host_vars/vm-tunnel-europe.yml
-cp ansible/host_vars/vm-tunnel-us.yml.example ansible/host_vars/vm-tunnel-us.yml
-# Éditer avec vos credentials Cloudflare (décodés du token)
+```hcl
+# GCP
+project_id     = "your-gcp-project-id"
+ssh_username   = "david"
+ssh_public_key = "ssh-ed25519 AAAA..."
+
+# Cloudflare
+cloudflare_api_token  = "your-api-token"
+cloudflare_account_id = "your-account-id"
+cloudflare_zone_id    = "your-zone-id"
+cloudflare_domain     = "lb-demo.example.com"
 ```
 
-### 4. Déployer (automatique)
+> **Trouver vos IDs Cloudflare :**
+> - Account ID : Dashboard → clic sur votre domaine → colonne droite
+> - Zone ID : Dashboard → clic sur votre domaine → colonne droite
+> - API Token : My Profile → API Tokens → Create Token
+
+### 3. Déployer
 
 ```bash
 terraform init
 ./deploy.sh
 ```
 
-Le script `deploy.sh` exécute automatiquement :
-1. `terraform apply` - crée les VMs
-2. Génère l'inventory Ansible avec les IPs
-3. Lance les playbooks Ansible (nginx + cloudflared)
+Le script déploie automatiquement :
+1. **Terraform** : VMs GCP + Tunnels + Load Balancer + DNS Cloudflare
+2. **Ansible** : nginx sur VMs web + cloudflared sur VMs tunnel
 
-### Déploiement manuel (optionnel)
-
-Si vous préférez exécuter les étapes manuellement :
+### 4. Tester
 
 ```bash
-# Terraform
-terraform apply
-
-# Générer l'inventory
-./generate_inventory.sh
-
-# Ansible
-cd ansible
-ansible-playbook -i inventory.ini playbook.yml
-ansible-playbook -i inventory.ini playbook_tunnel.yml
+curl -I https://lb-demo.example.com
 ```
+
+Vous devriez voir le header `X-Region` correspondant à votre localisation.
 
 ## 📁 Structure
 
 ```
-├── main.tf                 # 4 VMs + VPC + Firewall
-├── variables.tf            # Variables globales
+├── main.tf                 # VMs GCP + VPC + Firewall
+├── cloudflare.tf           # Tunnels + Load Balancer + DNS
+├── variables.tf            # Variables GCP + Cloudflare
 ├── outputs.tf              # IPs des VMs
-├── provider.tf             # Provider GCP
+├── provider.tf             # Providers GCP + Cloudflare
 ├── deploy.sh               # Script de déploiement automatique
-├── generate_inventory.sh   # Génère l'inventory depuis Terraform
+├── generate_inventory.sh   # Génère l'inventory Ansible
 └── ansible/
-    ├── inventory.ini       # Inventaire des VMs (généré automatiquement)
-    ├── playbook.yml        # Playbook nginx (VMs web)
-    ├── playbook_tunnel.yml # Playbook cloudflared (VMs tunnel)
-    └── host_vars/          # Credentials par tunnel
+    ├── inventory.ini       # Inventaire (généré automatiquement)
+    ├── playbook.yml        # nginx (VMs web)
+    └── playbook_tunnel.yml # cloudflared (VMs tunnel)
 ```
 
-## � Sécurité
+## 🔐 Sécurité
 
-- **Firewall GCP** : Aucune règle, tous les ports bloqués
-- **Accès** : Uniquement via tunnels Cloudflare
-- **Fichiers sensibles** : Ne pas commiter `*.tfvars`, `host_vars/*.yml`, `*.tfstate`
+- **Firewall GCP** : SSH (22) + HTTP interne (80) uniquement
+- **Accès web** : Uniquement via tunnels Cloudflare
+- **Fichiers sensibles** : Ne pas commiter `*.tfvars`, `*.tfstate`
+
+## 🗑️ Destruction
+
+```bash
+terraform destroy
+```

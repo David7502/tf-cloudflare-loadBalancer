@@ -5,7 +5,7 @@
 # ============================================
 
 resource "google_compute_network" "vpc" {
-  name                    = "my-vpc"
+  name                    = "${var.prefix}-vpc"
   auto_create_subnetworks = false
 }
 
@@ -14,7 +14,7 @@ resource "google_compute_network" "vpc" {
 # ============================================
 
 resource "google_compute_firewall" "allow_ssh" {
-  name    = "allow-ssh"
+  name    = "${var.prefix}-allow-ssh"
   network = google_compute_network.vpc.name
 
   allow {
@@ -23,12 +23,12 @@ resource "google_compute_firewall" "allow_ssh" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["ssh-enabled"]
+  target_tags   = ["${var.prefix}-ssh-enabled"]
 }
 
 # Autoriser le trafic interne entre VMs (tunnel -> web)
 resource "google_compute_firewall" "allow_internal" {
-  name    = "allow-internal"
+  name    = "${var.prefix}-allow-internal"
   network = google_compute_network.vpc.name
 
   allow {
@@ -37,7 +37,7 @@ resource "google_compute_firewall" "allow_internal" {
   }
 
   source_ranges = ["10.0.0.0/24", "10.1.0.0/24"]
-  target_tags   = ["ssh-enabled"]
+  target_tags   = ["${var.prefix}-ssh-enabled"]
 }
 
 # Pas d'autres ports ouverts - tout le trafic web externe passe par cloudflared
@@ -47,7 +47,7 @@ resource "google_compute_firewall" "allow_internal" {
 # ============================================
 
 resource "google_compute_subnetwork" "subnet_eu" {
-  name          = "subnet-europe-west1"
+  name          = "${var.prefix}-subnet-europe-west1"
   ip_cidr_range = "10.0.0.0/24"
   region        = "europe-west1"
   network       = google_compute_network.vpc.id
@@ -55,11 +55,11 @@ resource "google_compute_subnetwork" "subnet_eu" {
 
 # VM Web Europe - Serveur nginx
 resource "google_compute_instance" "vm_web_eu" {
-  name         = "vm-web-europe"
+  name         = "${var.prefix}-vm-web-europe"
   machine_type = var.machine_type
   zone         = "europe-west1-b"
 
-  tags = ["ssh-enabled"]
+  tags = ["${var.prefix}-ssh-enabled"]
 
   boot_disk {
     initialize_params {
@@ -83,11 +83,11 @@ resource "google_compute_instance" "vm_web_eu" {
 
 # VM Tunnel Europe - Cloudflared
 resource "google_compute_instance" "vm_tunnel_eu" {
-  name         = "vm-tunnel-europe"
+  name         = "${var.prefix}-vm-tunnel-europe"
   machine_type = var.machine_type
   zone         = "europe-west1-b"
 
-  tags = ["ssh-enabled"]
+  tags = ["${var.prefix}-ssh-enabled"]
 
   boot_disk {
     initialize_params {
@@ -114,7 +114,7 @@ resource "google_compute_instance" "vm_tunnel_eu" {
 # ============================================
 
 resource "google_compute_subnetwork" "subnet_us" {
-  name          = "subnet-us-central1"
+  name          = "${var.prefix}-subnet-us-central1"
   ip_cidr_range = "10.1.0.0/24"
   region        = "us-central1"
   network       = google_compute_network.vpc.id
@@ -122,11 +122,11 @@ resource "google_compute_subnetwork" "subnet_us" {
 
 # VM Web US - Serveur nginx
 resource "google_compute_instance" "vm_web_us" {
-  name         = "vm-web-us"
+  name         = "${var.prefix}-vm-web-us"
   machine_type = var.machine_type
   zone         = "us-central1-a"
 
-  tags = ["ssh-enabled"]
+  tags = ["${var.prefix}-ssh-enabled"]
 
   boot_disk {
     initialize_params {
@@ -150,11 +150,11 @@ resource "google_compute_instance" "vm_web_us" {
 
 # VM Tunnel US - Cloudflared
 resource "google_compute_instance" "vm_tunnel_us" {
-  name         = "vm-tunnel-us"
+  name         = "${var.prefix}-vm-tunnel-us"
   machine_type = var.machine_type
   zone         = "us-central1-a"
 
-  tags = ["ssh-enabled"]
+  tags = ["${var.prefix}-ssh-enabled"]
 
   boot_disk {
     initialize_params {
