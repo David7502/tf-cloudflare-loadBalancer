@@ -4,16 +4,24 @@
 # 🚇 Tunnels Cloudflare (remotely-managed)
 # ============================================
 
+resource "random_id" "tunnel_secret_eu" {
+  byte_length = 32
+}
+
+resource "random_id" "tunnel_secret_us" {
+  byte_length = 32
+}
+
 resource "cloudflare_zero_trust_tunnel_cloudflared" "tunnel_eu" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-tunnel-europe"
-  config_src = "cloudflare"
+  secret     = random_id.tunnel_secret_eu.b64_std
 }
 
 resource "cloudflare_zero_trust_tunnel_cloudflared" "tunnel_us" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-tunnel-us"
-  config_src = "cloudflare"
+  secret     = random_id.tunnel_secret_us.b64_std
 }
 
 # Configuration des tunnels (ingress rules)
