@@ -59,9 +59,22 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel_us_config" {
 # ⚖️ Load Balancer Cloudflare
 # ============================================
 
+resource "cloudflare_load_balancer_monitor" "http_monitor" {
+  account_id     = var.cloudflare_account_id
+  type           = "http"
+  expected_codes = "200"
+  method         = "GET"
+  path           = "/"
+  interval       = 60
+  retries        = 2
+  timeout        = 5
+  description    = "${var.prefix}-http-monitor"
+}
+
 resource "cloudflare_load_balancer_pool" "pool_eu" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-pool-europe"
+  monitor    = cloudflare_load_balancer_monitor.http_monitor.id
 
   origins {
     name    = "${var.prefix}-tunnel-europe"
@@ -73,6 +86,7 @@ resource "cloudflare_load_balancer_pool" "pool_eu" {
 resource "cloudflare_load_balancer_pool" "pool_us" {
   account_id = var.cloudflare_account_id
   name       = "${var.prefix}-pool-us"
+  monitor    = cloudflare_load_balancer_monitor.http_monitor.id
 
   origins {
     name    = "${var.prefix}-tunnel-us"
