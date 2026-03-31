@@ -31,7 +31,7 @@ Déploiement **100% automatisé** de 4 VMs GCP avec Cloudflare Tunnels, Load Bal
 
 **Cloudflare :**
 - 2 Tunnels (Europe + US)
-- Load Balancer avec geo-steering
+- Load Balancer avec random steering
 - Records DNS
 
 ## 📋 Prérequis
@@ -41,7 +41,13 @@ Déploiement **100% automatisé** de 4 VMs GCP avec Cloudflare Tunnels, Load Bal
 - Compte Google Cloud Platform (GCP)
 - Compte Cloudflare avec :
   - Un domaine configuré
-  - Un API Token avec permissions : `Zone:Read`, `Zone:Edit`, `DNS:Edit`, `Load Balancer:Edit`, `Cloudflare Tunnel:Edit`
+  - Load Balancer activé (add-on payant ou plan Pro+)
+  - Un API Token avec les permissions suivantes :
+    - **Account** → `Cloudflare Tunnel:Edit`
+    - **Account** → `Load Balancing: Monitors and Pools:Edit`
+    - **Zone** → `Zone:Read`
+    - **Zone** → `DNS:Edit`
+    - **Zone** → `Load Balancers:Edit`
 
 ## 🔧 Installation
 
